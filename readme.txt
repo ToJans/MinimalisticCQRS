@@ -1,0 +1,1 @@
+The absolute minimum of code required to get CQRS up & running; eat your heart out !!
