@@ -26,7 +26,7 @@
             var qryHub = $.connection.queryHub;
             var cmdHub = $.connection.commandHub;
             qryHub.UpdateBalance = function (id, balance) {
-                $("#details article[data-id=" + id + "] span[name='balance']").text(balance);
+                $("#details tr[data-id='" + id + "'] td[name='balance']").text(balance);
             };
             qryHub.AddAccountDetails = function (details) {
                 $("#accountTemplate").tmpl(details).appendTo("#details");
@@ -65,38 +65,49 @@
     </script>
 
     <script id="accountTemplate" type="text/x-jquery-tmpl">
-        <article data-id="${Id}">
-            OwnerName: ${OwnerName}<br/>
-            Account number: ${AccountNumber}<br/>
-            Current balance: <span name="balance">${Balance}</span><br/>
-        </article>
+            <tr data-id="${Id}">
+                <td>${Id}</td>
+                <td>${OwnerName}</td>
+                <td>${AccountNumber}</td>
+                <td name="balance">${Balance}</td>
+            </tr>
     </script>
 </head>
 <body>
     <header>
         <h1>Minimalistic CQRS POC</h1>
-        <div id="details"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>OwnerName</th>
+                    <th>AccountNumber</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody id="details"></tbody>
+        </table>
     </header>
     <section id="commands">
         <form id="registerAccount" action="#">   
             <fieldset>
-                <label>AccountId</label><input type="text" name="AccountId" /><br />
-                <label>Ownername</label><input type="text" name="OwnerName"/><br />
-                <label>Account number</label><input type="text" name="AccountNumber"/><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1"/><br />
+                <label>Ownername</label><input type="text" name="OwnerName" value="Tom Janssens"/><br />
+                <label>Account number</label><input type="text" name="AccountNumber" value="123-4567890-123" /><br />
                 <input type="submit" />
             </fieldset>
         </form>
         <form id="depositAmount" action="#">  
             <fieldset>
-                <label>AccountId</label><input type="text" name="AccountId" /><br />
-                <label>Amount</label><input type="text" name="Amount" /><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1" /><br />
+                <label>Amount</label><input type="text" name="Amount" value="3" /><br />
                 <input type="submit" />
             </fieldset>
         </form>
         <form id="withdrawAmount" action="#">  
             <fieldset>
-                <label>AccountId</label><input type="text" name="AccountId" /><br />
-                <label>Amount</label><input type="text" name="Amount" /><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1"  /><br />
+                <label>Amount</label><input type="text" name="Amount" value="3" /><br />
                 <input type="submit" />
             </fieldset>
         </form>
