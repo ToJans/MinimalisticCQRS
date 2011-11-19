@@ -11,6 +11,7 @@ namespace MinimalisticCQRS
         void AccountRegistered(string AccountId, string OwnerName,string AccountNumber);
         void AmountDeposited(string AccountId, decimal Amount);
         void AmountWithDrawn(string AccountId, decimal Amount);
+        void SomethingSaid(string username, string message);
     }
 
     public class CommandHub : Hub,IChange
@@ -47,6 +48,14 @@ namespace MinimalisticCQRS
             Apply(x => x.AmountWithDrawn(AccountId, Amount));
         }
 
+        public void SaySomething(string username, string message)
+        {
+            Guard.Against(string.IsNullOrWhiteSpace(username), "Username can not be empty");
+            if (string.IsNullOrWhiteSpace(message))
+                message = "ZOMG!!! I have no idea what to say, so I'll just say this stuff has lots of awesomesauce";
+            Apply(x=>x.SomethingSaid(username,message));
+        }
+
         // events
         void IChange.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
         {
@@ -64,6 +73,11 @@ namespace MinimalisticCQRS
             AccountBalances[AccountId] -= Amount;
         }
 
+        void IChange.SomethingSaid(string username, string message)
+        {
+            // don't do anything at all
+        }
+
         // helpers
         void Apply(Action<IChange> action)
         {
@@ -76,6 +90,12 @@ namespace MinimalisticCQRS
             {
                 if (assertion) throw new InvalidOperationException(message);
             }
+        }
+
+
+        public void SomethingSaid(string username, string message)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -126,6 +146,12 @@ namespace MinimalisticCQRS
         {
             Details[AccountId].Balance -= Amount;
             Clients.UpdateBalance(AccountId, Details[AccountId].Balance);
+        }
+
+
+        void IChange.SomethingSaid(string username, string message)
+        {
+            Clients.AddChatMessage(username, message);
         }
     }
 }

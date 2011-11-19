@@ -5,7 +5,7 @@
     <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
     <script src="Scripts/jQuery.tmpl.min.js" type="text/javascript"></script>
     <script src="signalr/hubs" type="text/javascript"></script>
-    <script type ="text/javascript">
+    <script type="text/javascript">
         $(function () {
             $.fn.serializeObject = function () {
                 var o = {};
@@ -31,6 +31,11 @@
             qryHub.AddAccountDetails = function (details) {
                 $("#accountTemplate").tmpl(details).appendTo("#details");
             };
+
+            qryHub.AddChatMessage = function (username, message) {
+                var res = $("#chatTemplate").tmpl({ username: username, message: message, time: new Date() });
+                $("#msgbox").append(res);
+            }
             $.connection.hub.start(function () {
                 qryHub.getDetails().done(function (res) {
                     var $details = $("#details");
@@ -47,8 +52,8 @@
                 cmdHub
                     .registerAccount(res.AccountId, res.OwnerName, res.AccountNumber)
                     .fail(function (msg) {
-                        alert(msg); 
-                     });
+                        alert(msg);
+                    });
                 return false;
             });
             $("#depositAmount").submit(function (frm) {
@@ -61,9 +66,18 @@
                 cmdHub.withdrawAmount(res.AccountId, res.Amount).fail(function (msg) { alert(msg); });
                 return false;
             });
+
+            $("#saySomething").submit(function (frm) {
+                var res = $(this).serializeObject();
+                cmdHub
+                    .saySomething(res.username, res.message)
+                    .done(function () { $("#saySomething textarea").empty(); })
+                    .fail(function (msg) { alert(msg); });
+                return false;
+            });
+
         });
     </script>
-
     <script id="accountTemplate" type="text/x-jquery-tmpl">
             <tr data-id="${Id}">
                 <td>${Id}</td>
@@ -72,10 +86,16 @@
                 <td name="balance">${Balance}</td>
             </tr>
     </script>
+    <script id="chatTemplate" type="text/x-jquery-tmpl">
+        ${time}<br/> <b>${username}</b>: ${message}<br/>
+    </script>
 </head>
 <body>
     <header>
         <h1>Minimalistic CQRS POC</h1>
+        <p>This uses realtime collaboration between all connected users, So if another user adds an account, deposits or withdraws, you'll notice !!</p>
+        <p>Feel free to enter a chat message...
+        </p>
         <table>
             <thead>
                 <tr>
@@ -88,6 +108,18 @@
             <tbody id="details"></tbody>
         </table>
     </header>
+    <sidebar style="float: right; width: 40%">
+            <h4>Chat is also realtime</h4>
+            <form id="saySomething" action="#">  
+                <fieldset>
+                    <label>Username</label><input type="text" name="username" value="[AnonymousCoward]"  /><br />
+                    <label>Message</label><textarea name="message" style="width:100%"></textarea><br />
+                    <input type="submit" />
+                </fieldset>
+            </form>
+            <div id="msgbox">
+            </div>
+        </sidebar>
     <section id="commands">
         <form id="registerAccount" action="#">   
             <fieldset>
@@ -117,6 +149,5 @@
         &copy; Core BVBA 2011
     </p>
     </footer>
-
 </body>
 </html>
