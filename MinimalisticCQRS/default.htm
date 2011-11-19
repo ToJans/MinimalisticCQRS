@@ -34,7 +34,7 @@
 
             qryHub.AddChatMessage = function (username, message) {
                 var res = $("#chatTemplate").tmpl({ username: username, message: message, time: new Date() });
-                $("#msgbox").append(res);
+                $("#msgbox").prepend(res);
             }
             $.connection.hub.start(function () {
                 qryHub.getDetails().done(function (res) {
@@ -110,21 +110,22 @@
             <tbody id="details"></tbody>
         </table>
     </header>
-    <sidebar style="float: right; width: 40%">
-            <h4>Chat is also realtime</h4>
+    <sidebar style="float: right;  width: 40%">
             <form id="saySomething" action="#">  
+                <h4>Say something</h4>
                 <fieldset>
                     <label>Username</label><input type="text" name="username" value="[AnonymousCoward]"  /><br />
                     <label>Message</label><textarea name="message" style="width:100%"></textarea><br />
                     <input type="submit" />
                 </fieldset>
             </form>
-            <div id="msgbox">
+            <div id="msgbox" style="display:block;width:90%;height:400px;">
             </div>
         </sidebar>
     <section id="commands">
         <form id="registerAccount" action="#">   
             <fieldset>
+                <h4>Register account</h4>
                 <label>AccountId</label><input type="text" name="AccountId" value="account/1"/><br />
                 <label>Ownername</label><input type="text" name="OwnerName" value="Tom Janssens"/><br />
                 <label>Account number</label><input type="text" name="AccountNumber" value="123-4567890-123" /><br />
@@ -133,6 +134,7 @@
         </form>
         <form id="depositAmount" action="#">  
             <fieldset>
+                <h4>Deposit amount</h4>
                 <label>AccountId</label><input type="text" name="AccountId" value="account/1" /><br />
                 <label>Amount</label><input type="text" name="Amount" value="3" /><br />
                 <input type="submit" />
@@ -140,6 +142,7 @@
         </form>
         <form id="withdrawAmount" action="#">  
             <fieldset>
+                <h4>Withdraw amount</h4>
                 <label>AccountId</label><input type="text" name="AccountId" value="account/1"  /><br />
                 <label>Amount</label><input type="text" name="Amount" value="3" /><br />
                 <input type="submit" />
