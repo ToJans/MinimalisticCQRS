@@ -1,0 +1,111 @@
+﻿<html>
+<head>
+    <title>Minimalistic CQRS POC</title>
+    <script src="Scripts/jquery-1.6.4.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
+    <script src="Scripts/jQuery.tmpl.min.js" type="text/javascript"></script>
+    <script src="signalr/hubs" type="text/javascript"></script>
+    <script type ="text/javascript">
+        $(function () {
+            $.fn.serializeObject = function () {
+                var o = {};
+                var a = this.serializeArray();
+                $.each(a, function () {
+                    if (o[this.name] !== undefined) {
+                        if (!o[this.name].push) {
+                            o[this.name] = [o[this.name]];
+                        }
+                        o[this.name].push(this.value || '');
+                    } else {
+                        o[this.name] = this.value || '';
+                    }
+                });
+                return o;
+            };
+
+            var qryHub = $.connection.queryHub;
+            var cmdHub = $.connection.commandHub;
+            qryHub.UpdateBalance = function (id, balance) {
+                $("#details article[data-id=" + id + "] span[name='balance']").text(balance);
+            };
+            qryHub.AddAccountDetails = function (details) {
+                $("#accountTemplate").tmpl(details).appendTo("#details");
+            };
+            $.connection.hub.start(function () {
+                qryHub.getDetails().done(function (res) {
+                    var $details = $("#details");
+                    $details.empty();
+                    for (var key in res) {
+                        var v = res[key];
+                        $("#accountTemplate").tmpl(v).appendTo($details);
+                    };
+                });
+            });
+
+            $("#registerAccount").submit(function () {
+                var res = $(this).serializeObject();
+                cmdHub
+                    .registerAccount(res.AccountId, res.OwnerName, res.AccountNumber)
+                    .fail(function (msg) {
+                        alert(msg); 
+                     });
+                return false;
+            });
+            $("#depositAmount").submit(function (frm) {
+                var res = $(this).serializeObject();
+                cmdHub.depositAmount(res.AccountId, res.Amount).fail(function (msg) { alert(msg); });
+                return false;
+            });
+            $("#withdrawAmount").submit(function (frm) {
+                var res = $(this).serializeObject();
+                cmdHub.withdrawAmount(res.AccountId, res.Amount).fail(function (msg) { alert(msg); });
+                return false;
+            });
+        });
+    </script>
+
+    <script id="accountTemplate" type="text/x-jquery-tmpl">
+        <article data-id="${Id}">
+            OwnerName: ${OwnerName}<br/>
+            Account number: ${AccountNumber}<br/>
+            Current balance: <span name="balance">${Balance}</span><br/>
+        </article>
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Minimalistic CQRS POC</h1>
+        <div id="details"></div>
+    </header>
+    <section id="commands">
+        <form id="registerAccount" action="#">   
+            <fieldset>
+                <label>AccountId</label><input type="text" name="AccountId" /><br />
+                <label>Ownername</label><input type="text" name="OwnerName"/><br />
+                <label>Account number</label><input type="text" name="AccountNumber"/><br />
+                <input type="submit" />
+            </fieldset>
+        </form>
+        <form id="depositAmount" action="#">  
+            <fieldset>
+                <label>AccountId</label><input type="text" name="AccountId" /><br />
+                <label>Amount</label><input type="text" name="Amount" /><br />
+                <input type="submit" />
+            </fieldset>
+        </form>
+        <form id="withdrawAmount" action="#">  
+            <fieldset>
+                <label>AccountId</label><input type="text" name="AccountId" /><br />
+                <label>Amount</label><input type="text" name="Amount" /><br />
+                <input type="submit" />
+            </fieldset>
+        </form>
+    </section>
+    <footer>
+    <p>
+        &copy; Core BVBA 2011
+    </p>
+    </footer>
+
+</body>
+</html>
