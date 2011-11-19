@@ -95,7 +95,7 @@ namespace MinimalisticCQRS
 
         public void SomethingSaid(string username, string message)
         {
-            throw new NotImplementedException();
+            // DO nothing
         }
     }
 
