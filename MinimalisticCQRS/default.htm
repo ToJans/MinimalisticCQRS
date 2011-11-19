@@ -87,7 +87,7 @@
             </tr>
     </script>
     <script id="chatTemplate" type="text/x-jquery-tmpl">
-        ${time}<br/> <b>${username}</b>: ${message}<br/>
+        <b>${username}</b>:<small>${time}</small><br/>${message}<br/>
     </script>
 </head>
 <body>
@@ -96,6 +96,8 @@
         <p>This uses realtime collaboration between all connected users, So if another user adds an account, deposits or withdraws, you'll notice !!</p>
         <p>Feel free to enter a chat message...
         </p>
+        <p>Source: <a href="https://github.com/ToJans/MinimalisticCQRS">github</a></p>
+        <p>Contact: <a href="https://twitter.com/#!/ToJans">Tojans@Twitter</a></p>
         <table>
             <thead>
                 <tr>
