@@ -7,22 +7,6 @@
     <script src="signalr/hubs" type="text/javascript"></script>
     <script type="text/javascript">
         $(function () {
-            $.fn.serializeObject = function () {
-                var o = {};
-                var a = this.serializeArray();
-                $.each(a, function () {
-                    if (o[this.name] !== undefined) {
-                        if (!o[this.name].push) {
-                            o[this.name] = [o[this.name]];
-                        }
-                        o[this.name].push(this.value || '');
-                    } else {
-                        o[this.name] = this.value || '';
-                    }
-                });
-                return o;
-            };
-
             var qryHub = $.connection.queryHub;
             var cmdHub = $.connection.commandHub;
             qryHub.UpdateBalance = function (id, balance) {
@@ -47,35 +31,18 @@
                 });
             });
 
-            $("#registerAccount").submit(function () {
-                var res = $(this).serializeObject();
-                cmdHub
-                    .registerAccount(res.AccountId, res.OwnerName, res.AccountNumber)
+            $("form").submit(function () {
+                var res = $(this).serializeArray();
+                var id = $(this).attr("id");
+                var arr = [];
+                for (var k in res)
+                    arr.push(res[k].value);
+                cmdHub[id].apply(cmdHub, arr)
                     .fail(function (msg) {
                         alert(msg);
                     });
                 return false;
             });
-            $("#depositAmount").submit(function (frm) {
-                var res = $(this).serializeObject();
-                cmdHub.depositAmount(res.AccountId, res.Amount).fail(function (msg) { alert(msg); });
-                return false;
-            });
-            $("#withdrawAmount").submit(function (frm) {
-                var res = $(this).serializeObject();
-                cmdHub.withdrawAmount(res.AccountId, res.Amount).fail(function (msg) { alert(msg); });
-                return false;
-            });
-
-            $("#saySomething").submit(function (frm) {
-                var res = $(this).serializeObject();
-                cmdHub
-                    .saySomething(res.username, res.message)
-                    .done(function () { $("#saySomething textarea").empty(); })
-                    .fail(function (msg) { alert(msg); });
-                return false;
-            });
-
         });
     </script>
     <script id="accountTemplate" type="text/x-jquery-tmpl">
