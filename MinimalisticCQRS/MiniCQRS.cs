@@ -6,7 +6,7 @@ using SignalR.Hubs;
 
 namespace MinimalisticCQRS
 {
-    public interface IChange
+    public interface IEventApplier
     {
         void AccountRegistered(string AccountId, string OwnerName,string AccountNumber);
         void AmountDeposited(string AccountId, decimal Amount);
@@ -14,16 +14,16 @@ namespace MinimalisticCQRS
         void SomethingSaid(string username, string message);
     }
 
-    public class CommandHub : Hub,IChange
+    public class CommandHub : Hub,IEventApplier
     {
-        IChange[] Changers;
+        IEventApplier[] EventAppliers;
 
         List<string> RegisteredAccountNumbers = new List<string>();
         Dictionary<string, decimal> AccountBalances = new Dictionary<string, decimal>();
 
-        public CommandHub(IChange Changer)
+        public CommandHub(IEventApplier EventAppliers)
         {
-            this.Changers = new IChange[] {this,Changer};
+            this.EventAppliers = new IEventApplier[] {this,EventAppliers};
         }
 
         // commands
@@ -57,74 +57,66 @@ namespace MinimalisticCQRS
         }
 
         // events
-        void IChange.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
+        void IEventApplier.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
         {
             RegisteredAccountNumbers.Add(AccountNumber);
             AccountBalances.Add(AccountId, 0);
         }
 
-        void IChange.AmountDeposited(string AccountId, decimal Amount)
+        void IEventApplier.AmountDeposited(string AccountId, decimal Amount)
         {
             AccountBalances[AccountId] += Amount;
         }
 
-        void IChange.AmountWithDrawn(string AccountId, decimal Amount)
+        void IEventApplier.AmountWithDrawn(string AccountId, decimal Amount)
         {
             AccountBalances[AccountId] -= Amount;
         }
 
-        void IChange.SomethingSaid(string username, string message)
+        void IEventApplier.SomethingSaid(string username, string message)
         {
             // don't do anything at all
         }
 
         // helpers
-        void Apply(Action<IChange> action)
+        void Apply(Action<IEventApplier> action)
         {
-            foreach (var c in Changers) action(c);
+            foreach (var c in EventAppliers) action(c);
         }
 
-        class Guard
+        static class Guard
         {
             public static void Against(bool assertion, string message)
             {
                 if (assertion) throw new InvalidOperationException(message);
             }
         }
+    }
 
-
-        public void SomethingSaid(string username, string message)
+    public class QueryHub : Hub,IEventApplier
+    {
+        public class AccountDetails
         {
-            // DO nothing
+            public string Id;
+            public string OwnerName;
+            public Decimal Balance;
+            public string AccountNumber;
+            public string Description { get { return string.Format("{0} - {1}", AccountNumber, OwnerName); } }
         }
-    }
 
-    public class AccountDetails
-    {
-        public string Id;
-        public string OwnerName;
-        public Decimal Balance;
-        public string AccountNumber;
-        public string Description { get { return string.Format("{0} - {1}", AccountNumber, OwnerName); } }
-    }
-
-    public class AccountBalances : Dictionary<string, decimal> { }
-
-    public class QueryHub : Hub,IChange
-    {
         Dictionary<string, AccountDetails> Details;
-
-        public AccountDetails[] GetDetails()
-        {
-            return Details.Values.ToArray();
-        }
 
         public QueryHub()
         {
             Details = new Dictionary<string, AccountDetails>();
         }
 
-        void IChange.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
+        public AccountDetails[] GetDetails()
+        {
+            return Details.Values.ToArray();
+        }
+
+        void IEventApplier.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
         {
             var detail = new AccountDetails { 
                 Id = AccountId,
@@ -136,22 +128,24 @@ namespace MinimalisticCQRS
             Clients.AddAccountDetails(detail);
         }
 
-        void IChange.AmountDeposited(string AccountId, decimal Amount)
+        void IEventApplier.AmountDeposited(string AccountId, decimal Amount)
         {
             Details[AccountId].Balance += Amount;
             Clients.UpdateBalance(AccountId, Details[AccountId].Balance);
         }
 
-        void IChange.AmountWithDrawn(string AccountId, decimal Amount)
+        void IEventApplier.AmountWithDrawn(string AccountId, decimal Amount)
         {
             Details[AccountId].Balance -= Amount;
             Clients.UpdateBalance(AccountId, Details[AccountId].Balance);
         }
 
-
-        void IChange.SomethingSaid(string username, string message)
+        void IEventApplier.SomethingSaid(string username, string message)
         {
             Clients.AddChatMessage(username, message);
         }
+
+
+
     }
 }
