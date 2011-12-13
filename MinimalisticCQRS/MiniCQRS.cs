@@ -6,38 +6,38 @@ using SignalR.Hubs;
 
 namespace MinimalisticCQRS
 {
-    public interface IEventApplier
+    public interface IHandleChanges
     {
-        void AccountRegistered(string AccountId, string OwnerName,string AccountNumber);
-        void AmountDeposited(string AccountId, decimal Amount);
-        void AmountWithDrawn(string AccountId, decimal Amount);
-        void SomethingSaid(string username, string message);
+        void OnAccountRegistered(string AccountId, string OwnerName,string AccountNumber);
+        void OnAmountDeposited(string AccountId, decimal Amount);
+        void OnAmountWithDrawn(string AccountId, decimal Amount);
+        void OnMessageShared(string username, string message);
     }
 
-    public class CommandHub : Hub,IEventApplier
+    public class CommandHub : Hub,IHandleChanges
     {
-        IEventApplier[] EventAppliers;
+        IHandleChanges[] EventAppliers;
 
         List<string> RegisteredAccountNumbers = new List<string>();
         Dictionary<string, decimal> AccountBalances = new Dictionary<string, decimal>();
 
-        public CommandHub(IEventApplier EventAppliers)
+        public CommandHub(IHandleChanges EventAppliers)
         {
-            this.EventAppliers = new IEventApplier[] {this,EventAppliers};
+            this.EventAppliers = new IHandleChanges[] {this,EventAppliers};
         }
 
         // commands
         public void RegisterAccount(string AccountId, string OwnerName,string AccountNumber)
         {
             Guard.Against(RegisteredAccountNumbers.Contains(AccountNumber), "This account number has already been registered");
-            Apply(x=>x.AccountRegistered(AccountId,OwnerName,AccountNumber));
+            Apply(x=>x.OnAccountRegistered(AccountId,OwnerName,AccountNumber));
         }
 
         public void DepositAmount(string AccountId, decimal Amount)
         {
             Guard.Against(!AccountBalances.ContainsKey(AccountId), "You can not deposit into an unregistered account");
             Guard.Against(Amount < 0, "You can not deposit an amount < 0");
-            Apply(x=>x.AmountDeposited(AccountId,Amount));
+            Apply(x=>x.OnAmountDeposited(AccountId,Amount));
         }
 
         public void WithdrawAmount(string AccountId, decimal Amount)
@@ -45,41 +45,41 @@ namespace MinimalisticCQRS
             Guard.Against(!AccountBalances.ContainsKey(AccountId), "You can not withdraw from an unregistered account");
             Guard.Against(Amount < 0, "You can not withdraw an amount < 0");
             Guard.Against(Amount > AccountBalances[AccountId], "You can not withdraw an amount larger then the current balance");
-            Apply(x => x.AmountWithDrawn(AccountId, Amount));
+            Apply(x => x.OnAmountWithDrawn(AccountId, Amount));
         }
 
-        public void SaySomething(string username, string message)
+        public void ShareMessage(string username, string message)
         {
             Guard.Against(string.IsNullOrWhiteSpace(username), "Username can not be empty");
             if (string.IsNullOrWhiteSpace(message))
                 message = "ZOMG!!! I have no idea what to say, so I'll just say this stuff has lots of awesomesauce";
-            Apply(x=>x.SomethingSaid(username,message));
+            Apply(x=>x.OnMessageShared(username,message));
         }
 
         // events
-        void IEventApplier.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
+        void IHandleChanges.OnAccountRegistered(string AccountId, string OwnerName, string AccountNumber)
         {
             RegisteredAccountNumbers.Add(AccountNumber);
             AccountBalances.Add(AccountId, 0);
         }
 
-        void IEventApplier.AmountDeposited(string AccountId, decimal Amount)
+        void IHandleChanges.OnAmountDeposited(string AccountId, decimal Amount)
         {
             AccountBalances[AccountId] += Amount;
         }
 
-        void IEventApplier.AmountWithDrawn(string AccountId, decimal Amount)
+        void IHandleChanges.OnAmountWithDrawn(string AccountId, decimal Amount)
         {
             AccountBalances[AccountId] -= Amount;
         }
 
-        void IEventApplier.SomethingSaid(string username, string message)
+        void IHandleChanges.OnMessageShared(string username, string message)
         {
             // don't do anything at all
         }
 
         // helpers
-        void Apply(Action<IEventApplier> action)
+        void Apply(Action<IHandleChanges> action)
         {
             foreach (var c in EventAppliers) action(c);
         }
@@ -93,7 +93,7 @@ namespace MinimalisticCQRS
         }
     }
 
-    public class QueryHub : Hub,IEventApplier
+    public class QueryHub : Hub,IHandleChanges
     {
         public class AccountDetails
         {
@@ -116,7 +116,7 @@ namespace MinimalisticCQRS
             return Details.Values.ToArray();
         }
 
-        void IEventApplier.AccountRegistered(string AccountId, string OwnerName, string AccountNumber)
+        void IHandleChanges.OnAccountRegistered(string AccountId, string OwnerName, string AccountNumber)
         {
             var detail = new AccountDetails { 
                 Id = AccountId,
@@ -128,19 +128,19 @@ namespace MinimalisticCQRS
             Clients.AddAccountDetails(detail);
         }
 
-        void IEventApplier.AmountDeposited(string AccountId, decimal Amount)
+        void IHandleChanges.OnAmountDeposited(string AccountId, decimal Amount)
         {
             Details[AccountId].Balance += Amount;
             Clients.UpdateBalance(AccountId, Details[AccountId].Balance);
         }
 
-        void IEventApplier.AmountWithDrawn(string AccountId, decimal Amount)
+        void IHandleChanges.OnAmountWithDrawn(string AccountId, decimal Amount)
         {
             Details[AccountId].Balance -= Amount;
             Clients.UpdateBalance(AccountId, Details[AccountId].Balance);
         }
 
-        void IEventApplier.SomethingSaid(string username, string message)
+        void IHandleChanges.OnMessageShared(string username, string message)
         {
             Clients.AddChatMessage(username, message);
         }
