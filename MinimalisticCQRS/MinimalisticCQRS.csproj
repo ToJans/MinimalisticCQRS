@@ -89,8 +89,10 @@
     <Compile Include="Hubs\QueryHub.cs" />
     <Compile Include="Infrastructure\AR.cs" />
     <Compile Include="Infrastructure\Guard.cs" />
+    <Compile Include="Infrastructure\Message.cs" />
     <Compile Include="Infrastructure\MiniVan.cs" />
     <Compile Include="Domain\Account.cs" />
+    <Compile Include="Infrastructure\MiniVanRegistry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
