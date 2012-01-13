@@ -10,14 +10,14 @@ namespace MinimalisticCQRS.Domain
             this.bus = bus;
         }
 
-        public void OnTransferApprovedOnSource(decimal Amount, string TargetAccountId, string AccountId)
+        public void OnTransferProcessedOnSource(decimal Amount, string TargetAccountId, string AccountId)
         {
-            bus.CompleteTransferOnTarget(Amount, SourceAccountId: AccountId, AccountId: TargetAccountId);
+            bus.ProcessTransferOnTarget(Amount, SourceAccountId: AccountId, AccountId: TargetAccountId);
         }
 
-        public void OnTransferFailedOnTarget(string Reason,decimal Amount, string SourceAccountId, string AccountId)
+        public void OnTransferFailedOnTarget(string Reason, decimal Amount, string SourceAccountId, string AccountId)
         {
-            bus.CancelTransferOnSource(Reason,Amount, TargetAccountId:AccountId, AccountId: SourceAccountId);
+            bus.CancelTransfer(Reason,Amount, TargetAccountId:AccountId, AccountId: SourceAccountId);
         }
     }
 }

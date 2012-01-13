@@ -36,20 +36,23 @@ namespace MinimalisticCQRS.Domain
             Guard.Against(Amount < 0, "You can not transfer an amount < 0");
             Guard.Against(Amount > Balance, "You can not transfer an amount larger then the current balance");
             Apply.AmountWithdrawn(Amount, AccountId: Id);
-            Apply.TransferApprovedOnSource(Amount, TargetAccountId, AccountId: Id);
+            Apply.TransferProcessedOnSource(Amount, TargetAccountId, AccountId: Id);
         }
 
-        public void CompleteTransferOnTarget(decimal Amount, string SourceAccountId)
+        public void ProcessTransferOnTarget(decimal Amount, string SourceAccountId)
         {
             if (IsEnabed)
+            {
                 Apply.AmountDeposited(Amount, AccountId: Id);
+                Apply.TransferCompleted(Amount, SourceAccountId, AccountId: Id);
+            }
             else
             {
                 Apply.TransferFailedOnTarget("You can not transfer to an unregistered account",Amount, SourceAccountId, AccountId: Id);
             }
         }
 
-        public void CancelTransferOnSource(string Reason,decimal Amount,string TransferTargetId)
+        public void CancelTransfer(string Reason,decimal Amount,string TransferTargetId)
         {
             Apply.AmountDeposited(Amount, AccountId: Id);
             Apply.TransferCanceled(Reason, Amount, TransferTargetId, AccountId: Id);
