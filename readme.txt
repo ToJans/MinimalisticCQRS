@@ -1,1 +1,1 @@
-The absolute minimum of code required to get CQRS up & running; eat your heart out !!
+An attempt for message-less CQRS (under the hood messages are still used)

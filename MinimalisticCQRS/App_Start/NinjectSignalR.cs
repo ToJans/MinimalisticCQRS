@@ -1,6 +1,8 @@
 using Ninject;
 using SignalR.Infrastructure;
 using SignalR.Ninject;
+using MinimalisticCQRS.Infrastructure;
+using MinimalisticCQRS.Hubs;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof(MinimalisticCQRS.App_Start.NinjectSignalR), "Start")]
 
@@ -29,8 +31,11 @@ namespace MinimalisticCQRS.App_Start {
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         private static void RegisterServices(IKernel kernel) {
+            var bus = new MiniBus();
+            bus.RegisterArType<Account>();
             var qhub = new QueryHub();
-            var chub = new CommandHub(qhub);
+            var chub = new CommandHub(bus);
+            bus.RegisterNonArInstance(qhub,new AccountUniquenessSaga(),new AccountTransferSaga(bus));
             kernel.Bind<CommandHub>().ToConstant(chub);
             kernel.Bind<QueryHub>().ToConstant(qhub);
         }

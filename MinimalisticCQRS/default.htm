@@ -5,15 +5,30 @@
     <script src="Scripts/jquery.signalR.min.js" type="text/javascript"></script>
     <script src="Scripts/jQuery.tmpl.min.js" type="text/javascript"></script>
     <script src="signalr/hubs" type="text/javascript"></script>
+    <style type="text/css">
+        .jquery-tmpl
+        {
+            display: none;
+        }
+        
+        #commands form
+        {
+            width:10em;
+            display:inline-block;
+            padding:2em;
+        }
+    </style>
     <script type="text/javascript">
         $(function () {
             var qryHub = $.connection.queryHub;
             var cmdHub = $.connection.commandHub;
-            qryHub.UpdateBalance = function (id, balance) {
-                $("#details tr[data-id='" + id + "'] td[name='balance']").text(balance);
+            var $details = $("#details");
+            qryHub.UpdateBalance = function (balance, id) {
+                $("#details tr[data-id='" + id + "'] .balance").text(balance);
             };
             qryHub.AddAccountDetails = function (details) {
-                $("#accountTemplate").tmpl(details).appendTo("#details");
+                var res = $("#accountTemplate").tmpl(details);
+                $details.append(res);
             };
 
             qryHub.AddChatMessage = function (username, message) {
@@ -22,11 +37,10 @@
             }
             $.connection.hub.start(function () {
                 qryHub.getDetails().done(function (res) {
-                    var $details = $("#details");
-                    $details.empty();
                     for (var key in res) {
                         var v = res[key];
-                        $("#accountTemplate").tmpl(v).appendTo($details);
+                        var res = $("#accountTemplate").tmpl(v);
+                        $details.append(res);
                     };
                 });
             });
@@ -50,7 +64,7 @@
                 <td>${Id}</td>
                 <td>${OwnerName}</td>
                 <td>${AccountNumber}</td>
-                <td name="balance">${Balance}</td>
+                <td class="balance">${Balance}</td>
             </tr>
     </script>
     <script id="chatTemplate" type="text/x-jquery-tmpl">
@@ -74,15 +88,16 @@
                     <th>Balance</th>
                 </tr>
             </thead>
-            <tbody id="details"></tbody>
+            <tbody id="details">
+            </tbody>
         </table>
     </header>
-    <sidebar style="float: right;  width: 40%">
+    <sidebar style="float: right; width: 40%">
             <form id="shareMessage" action="#">  
                 <h4>Say something</h4>
                 <fieldset>
                     <label>Username</label><input type="text" name="username" value="[AnonymousCoward]"  /><br />
-                    <label>Message</label><textarea name="message" style="width:100%"></textarea><br />
+                    <label>Message</label><textarea name="message" style="width:100%" rows="4" cols="40"></textarea><br />
                     <input type="submit" />
                 </fieldset>
             </form>
@@ -93,25 +108,34 @@
         <form id="registerAccount" action="#">   
             <fieldset>
                 <h4>Register account</h4>
-                <label>AccountId</label><input type="text" name="AccountId" value="account/1"/><br />
                 <label>Ownername</label><input type="text" name="OwnerName" value="Tom Janssens"/><br />
                 <label>Account number</label><input type="text" name="AccountNumber" value="123-4567890-123" /><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1"/><br />
                 <input type="submit" />
             </fieldset>
         </form>
-        <form id="depositAmount" action="#">  
+        <form id="depositCash" action="#">  
             <fieldset>
-                <h4>Deposit amount</h4>
-                <label>AccountId</label><input type="text" name="AccountId" value="account/1" /><br />
+                <h4>Deposit cash</h4>
                 <label>Amount</label><input type="text" name="Amount" value="3" /><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1"/><br />
                 <input type="submit" />
             </fieldset>
         </form>
-        <form id="withdrawAmount" action="#">  
+        <form id="withdrawCash" action="#">  
             <fieldset>
-                <h4>Withdraw amount</h4>
+                <h4>Withdraw cash</h4>
+                <label>Amount</label><input type="text" name="Amount" value="3" /><br />
                 <label>AccountId</label><input type="text" name="AccountId" value="account/1"  /><br />
+                <input type="submit" />
+            </fieldset>
+        </form>
+        <form id="transferAmount" action="#">  
+            <fieldset>
+                <h4>Transfer an amount</h4>
                 <label>Amount</label><input type="text" name="Amount" value="3" /><br />
+                <label>TargetAccountId</label><input type="text" name="TargetAccountId" value="account/2"  /><br />
+                <label>AccountId</label><input type="text" name="AccountId" value="account/1"  /><br />
                 <input type="submit" />
             </fieldset>
         </form>
