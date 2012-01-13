@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using SignalR.Hubs;
-using System.Linq.Expressions;
+﻿using System.Collections.Generic;
 using MinimalisticCQRS.Infrastructure;
 
-namespace MinimalisticCQRS
+namespace MinimalisticCQRS.Domain
 {
+
     public class Account : AR
     {
         decimal Balance = 0;
@@ -77,40 +73,5 @@ namespace MinimalisticCQRS
             Balance -= Amount;
         }
 
-    }
-
-    public class AccountTransferSaga
-    {
-        private dynamic bus;
-
-        public AccountTransferSaga(dynamic bus)
-        {
-            this.bus = bus;
-        }
-
-        public void OnTransferApprovedOnSource(decimal Amount, string TargetAccountId, string AccountId)
-        {
-            bus.CompleteTransferOnTarget(Amount, SourceAccountId: AccountId, AccountId: TargetAccountId);
-        }
-
-        public void OnTransferFailedOnTarget(decimal Amount, string SourceAccountId, string AccountId)
-        {
-            bus.CancelTransferOnSource(Amount, AccountId: SourceAccountId);
-        }
-    }
-
-    public class AccountUniquenessSaga
-    {
-        List<string> RegisteredAccountNumbers = new List<string>();
-
-        public void CanRegisterAccount(string OwnerName, string AccountNumber, string AccountId)
-        {
-            Guard.Against(RegisteredAccountNumbers.Contains(AccountNumber), "This account number has already been registered");
-        }
-
-        void OnAccountRegistered(string OwnerName, string AccountNumber, string AccountId)
-        {
-            RegisteredAccountNumbers.Add(AccountNumber);
-        }
     }
 }

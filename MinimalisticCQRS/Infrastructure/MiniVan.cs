@@ -9,7 +9,7 @@ using System.Dynamic;
 namespace MinimalisticCQRS.Infrastructure
 {
 
-    public class MiniBus: DynamicObject
+    public class MiniVan: DynamicObject
     {
         Dictionary<Type, string> RegisteredARTypeIdNames = new Dictionary<Type, string>();
 

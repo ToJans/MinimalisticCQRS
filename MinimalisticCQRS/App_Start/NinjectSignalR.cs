@@ -31,7 +31,7 @@ namespace MinimalisticCQRS.App_Start {
         /// </summary>
         /// <param name="kernel">The kernel.</param>
         private static void RegisterServices(IKernel kernel) {
-            var bus = new MiniBus();
+            var bus = new MiniVan();
             bus.RegisterArType<Account>();
             var qhub = new QueryHub();
             var chub = new CommandHub(bus);

@@ -83,11 +83,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\NinjectSignalR.cs" />
+    <Compile Include="Domain\AccountTransferSaga.cs" />
+    <Compile Include="Domain\AccountUniquenessSaga.cs" />
     <Compile Include="Hubs\CommandHub.cs" />
     <Compile Include="Hubs\QueryHub.cs" />
     <Compile Include="Infrastructure\AR.cs" />
     <Compile Include="Infrastructure\Guard.cs" />
-    <Compile Include="Infrastructure\MiniBus.cs" />
+    <Compile Include="Infrastructure\MiniVan.cs" />
     <Compile Include="Domain\Account.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
