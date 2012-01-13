@@ -45,14 +45,14 @@ namespace MinimalisticCQRS.Domain
                 Apply.AmountDeposited(Amount, AccountId: Id);
             else
             {
-                Apply.TransferFailedOnTarget(Amount, SourceAccountId, AccountId: Id);
-                Guard.Against(!IsEnabed, "You can not transfer to an unregistered account");
+                Apply.TransferFailedOnTarget("You can not transfer to an unregistered account",Amount, SourceAccountId, AccountId: Id);
             }
         }
 
-        public void CancelTransferOnSource(decimal Amount)
+        public void CancelTransferOnSource(string Reason,decimal Amount,string TransferTargetId)
         {
             Apply.AmountDeposited(Amount, AccountId: Id);
+            Apply.TransferCanceled(Reason, Amount, TransferTargetId, AccountId: Id);
         }
 
 
@@ -72,6 +72,8 @@ namespace MinimalisticCQRS.Domain
         {
             Balance -= Amount;
         }
+
+
 
     }
 }

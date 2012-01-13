@@ -58,5 +58,10 @@ namespace MinimalisticCQRS.Hubs
         {
             Clients.AddChatMessage(username, message);
         }
+
+        void OnTransferCanceled(string Reason, decimal Amount, string TargetAccountId, string AccountId)
+        {
+            Caller.Alert(Reason);
+        }
     }
 }

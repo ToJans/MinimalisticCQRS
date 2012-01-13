@@ -15,9 +15,9 @@ namespace MinimalisticCQRS.Domain
             bus.CompleteTransferOnTarget(Amount, SourceAccountId: AccountId, AccountId: TargetAccountId);
         }
 
-        public void OnTransferFailedOnTarget(decimal Amount, string SourceAccountId, string AccountId)
+        public void OnTransferFailedOnTarget(string Reason,decimal Amount, string SourceAccountId, string AccountId)
         {
-            bus.CancelTransferOnSource(Amount, AccountId: SourceAccountId);
+            bus.CancelTransferOnSource(Reason,Amount, TargetAccountId:AccountId, AccountId: SourceAccountId);
         }
     }
 }
