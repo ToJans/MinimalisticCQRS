@@ -7,24 +7,24 @@ namespace MinimalisticCQRS.Domain
     public class Account : AR
     {
         decimal Balance = 0;
-        bool IsEnabed = false;
+        bool IsEnabled = false;
 
         public void RegisterAccount(string OwnerName, string AccountNumber)
         {
-            if (IsEnabed) return;
+            if (IsEnabled) return;
             Apply.AccountRegistered(OwnerName, AccountNumber, AccountId: Id);
         }
 
         public void DepositCash(decimal Amount)
         {
-            Guard.Against(!IsEnabed, "You can not deposit into an unregistered account");
+            Guard.Against(!IsEnabled, "You can not deposit into an unregistered account");
             Guard.Against(Amount < 0, "You can not deposit an amount < 0");
             Apply.AmountDeposited(Amount, AccountId: Id);
         }
 
         public void WithdrawCash(decimal Amount)
         {
-            Guard.Against(!IsEnabed, "You can not withdraw from an unregistered account");
+            Guard.Against(!IsEnabled, "You can not withdraw from an unregistered account");
             Guard.Against(Amount < 0, "You can not withdraw an amount < 0");
             Guard.Against(Amount > Balance, "You can not withdraw an amount larger then the current balance");
             Apply.AmountWithdrawn(Amount, AccountId: Id);
@@ -32,7 +32,7 @@ namespace MinimalisticCQRS.Domain
 
         public void TransferAmount(decimal Amount, string TargetAccountId)
         {
-            Guard.Against(!IsEnabed, "You can not transfer from an unregistered account");
+            Guard.Against(!IsEnabled, "You can not transfer from an unregistered account");
             Guard.Against(Amount < 0, "You can not transfer an amount < 0");
             Guard.Against(Amount > Balance, "You can not transfer an amount larger then the current balance");
             Apply.AmountWithdrawn(Amount, AccountId: Id);
@@ -41,7 +41,7 @@ namespace MinimalisticCQRS.Domain
 
         public void ProcessTransferOnTarget(decimal Amount, string SourceAccountId)
         {
-            if (IsEnabed)
+            if (IsEnabled)
             {
                 Apply.AmountDeposited(Amount, AccountId: Id);
                 Apply.TransferCompleted(Amount, SourceAccountId, AccountId: Id);
@@ -63,7 +63,7 @@ namespace MinimalisticCQRS.Domain
         void OnAccountRegistered(string OwnerName)
         {
             Balance = 0;
-            IsEnabed = true;
+            IsEnabled = true;
         }
 
         void OnAmountDeposited(decimal Amount)
