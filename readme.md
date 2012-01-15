@@ -4,6 +4,10 @@ This is an attempt for a CQRS reference app with the minimum amount of code
 
 ## Example implementation domain
 
+### Blog post with an overview:
+
+[Here](http://www.corebvba.be/blog/post/CQRS-for-the-lazy-ass.aspx)
+
 ### Source
 [Here](https://github.com/ToJans/MinimalisticCQRS/tree/master/MinimalisticCQRS/Domain)
 
