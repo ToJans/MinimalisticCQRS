@@ -90,6 +90,7 @@
     <Compile Include="Hubs\CommandHub.cs" />
     <Compile Include="Hubs\QueryHub.cs" />
     <Compile Include="Infrastructure\AR.cs" />
+    <Compile Include="Infrastructure\ExampleInterceptor.cs" />
     <Compile Include="Infrastructure\Guard.cs" />
     <Compile Include="Infrastructure\Message.cs" />
     <Compile Include="Infrastructure\MiniVan.cs" />
