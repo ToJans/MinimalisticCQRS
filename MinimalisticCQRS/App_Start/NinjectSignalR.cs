@@ -39,7 +39,7 @@ namespace MinimalisticCQRS.App_Start {
             var chub = new CommandHub(bus);
 
             registry.RegisterArType<Account>();
-            registry.RegisterNonArInstance(qhub, new AccountUniquenessSaga(), new AccountTransferSaga(bus));
+            registry.RegisterNonArInstance(qhub, new AccountUniquenessSaga(bus), new AccountTransferSaga(bus));
 
             kernel.Bind<CommandHub>().ToConstant(chub);
             kernel.Bind<QueryHub>().ToConstant(qhub);

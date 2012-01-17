@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using SignalR.Hubs;
+using System.Text;
 
 namespace MinimalisticCQRS.Hubs
 {
@@ -62,6 +63,23 @@ namespace MinimalisticCQRS.Hubs
         void OnTransferCanceled(string Reason, decimal Amount, string TargetAccountId, string AccountId)
         {
             Caller.Alert(Reason);
+        }
+
+        // a direct command
+        void ReportIssueToBackoffice(string subject, string details, object data)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("An error occured; normally this message would have been reported to the "+
+                "backoffice, and they would manually resolve this issue; in this case I just show an alert");
+            sb.AppendLine("MailTo: \tSupport@blah.com");
+            sb.Append("Subject:\t");
+            sb.AppendLine(subject);
+            sb.Append("Body:\t");
+            sb.AppendLine(details);
+            sb.Append("Attachment:\t");
+            //sb.AppendLine(data); // as JSON
+
+            Caller.Alert(sb.ToString());
         }
     }
 }

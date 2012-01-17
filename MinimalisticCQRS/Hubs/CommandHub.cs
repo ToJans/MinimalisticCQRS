@@ -42,7 +42,7 @@ namespace MinimalisticCQRS.Hubs
             Guard.Against(string.IsNullOrWhiteSpace(username), "Username can not be empty");
             if (string.IsNullOrWhiteSpace(message))
                 message = "ZOMG!!! I have no idea what to say, so I'll just say this stuff has lots of awesomesauce";
-            bus.OnMessageShared(username, message);
+            bus.MessageShared(username, message);
         }
 
     }
