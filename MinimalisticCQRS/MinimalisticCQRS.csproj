@@ -93,6 +93,7 @@
     <Compile Include="Infrastructure\ExampleInterceptor.cs" />
     <Compile Include="Infrastructure\Guard.cs" />
     <Compile Include="Infrastructure\Message.cs" />
+    <Compile Include="Infrastructure\MethodBodyComparer.cs" />
     <Compile Include="Infrastructure\MiniVan.cs" />
     <Compile Include="Domain\Account.cs" />
     <Compile Include="Infrastructure\MiniVanRegistry.cs" />

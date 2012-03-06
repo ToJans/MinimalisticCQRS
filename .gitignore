@@ -9,4 +9,4 @@ _ReSharper.*
 *~
 *.swp
 /Build
-/Packages
+/packages/
