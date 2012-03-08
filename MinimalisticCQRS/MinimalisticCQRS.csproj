@@ -85,8 +85,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\NinjectSignalR.cs" />
+    <Compile Include="Commands\AccountCommands.cs" />
     <Compile Include="Domain\AccountTransferSaga.cs" />
     <Compile Include="Domain\AccountUniquenessSaga.cs" />
+    <Compile Include="Events\AccountEvents.cs" />
     <Compile Include="Hubs\CommandHub.cs" />
     <Compile Include="Hubs\QueryHub.cs" />
     <Compile Include="Infrastructure\AR.cs" />

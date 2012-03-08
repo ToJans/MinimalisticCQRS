@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using MinimalisticCQRS.Infrastructure;
+﻿using MinimalisticCQRS.Infrastructure;
 
 namespace MinimalisticCQRS.Domain
 {
-
     public class Account : AR
     {
         decimal Balance = 0;
@@ -12,14 +10,16 @@ namespace MinimalisticCQRS.Domain
         public void RegisterAccount(string OwnerName, string AccountNumber)
         {
             if (IsEnabled) return;
-            Apply.AccountRegistered(OwnerName, AccountNumber, AccountId: Id);
+            ApplyEvent.AccountRegistered(OwnerName: OwnerName, AccountNumber: AccountNumber, AccountId: Id);
         }
 
         public void DepositCash(decimal Amount)
         {
             Guard.Against(!IsEnabled, "You can not deposit into an unregistered account");
             Guard.Against(Amount < 0, "You can not deposit an amount < 0");
-            Apply.AmountDeposited(Amount, AccountId: Id);
+            // we support both instance classes and direct calls to emit events
+            //Apply.AmountDeposited(Amount:Amount, AccountId: Id);
+            Apply(new Events.AmountDeposited { AccountId = Id, Amount = Amount });
         }
 
         public void WithdrawCash(decimal Amount)
@@ -27,7 +27,7 @@ namespace MinimalisticCQRS.Domain
             Guard.Against(!IsEnabled, "You can not withdraw from an unregistered account");
             Guard.Against(Amount < 0, "You can not withdraw an amount < 0");
             Guard.Against(Amount > Balance, "You can not withdraw an amount larger then the current balance");
-            Apply.AmountWithdrawn(Amount, AccountId: Id);
+            ApplyEvent.AmountWithdrawn(Amount: Amount, AccountId: Id);
         }
 
         public void TransferAmount(decimal Amount, string TargetAccountId)
@@ -35,48 +35,44 @@ namespace MinimalisticCQRS.Domain
             Guard.Against(!IsEnabled, "You can not transfer from an unregistered account");
             Guard.Against(Amount < 0, "You can not transfer an amount < 0");
             Guard.Against(Amount > Balance, "You can not transfer an amount larger then the current balance");
-            Apply.AmountWithdrawn(Amount, AccountId: Id);
-            Apply.TransferProcessedOnSource(Amount, TargetAccountId, AccountId: Id);
+            ApplyEvent.AmountWithdrawn(Amount: Amount, AccountId: Id);
+            ApplyEvent.TransferProcessedOnSource(Amount, TargetAccountId, AccountId: Id);
         }
 
         public void ProcessTransferOnTarget(decimal Amount, string SourceAccountId)
         {
             if (IsEnabled)
             {
-                Apply.AmountDeposited(Amount, AccountId: Id);
-                Apply.TransferCompleted(Amount, SourceAccountId, AccountId: Id);
+                ApplyEvent.AmountDeposited(Amount: Amount, AccountId: Id);
+                ApplyEvent.TransferCompleted(Amount, SourceAccountId, AccountId: Id);
             }
             else
             {
-                Apply.TransferFailedOnTarget("You can not transfer to an unregistered account",Amount, SourceAccountId, AccountId: Id);
+                ApplyEvent.TransferFailedOnTarget("You can not transfer to an unregistered account", Amount, SourceAccountId, AccountId: Id);
             }
         }
 
-        public void CancelTransfer(string Reason,decimal Amount,string TransferTargetId)
+        public void CancelTransfer(string Reason, decimal Amount, string TargetAccountId)
         {
-            Apply.AmountDeposited(Amount, AccountId: Id);
-            Apply.TransferCanceled(Reason, Amount, TransferTargetId, AccountId: Id);
+            ApplyEvent.AmountDeposited(Amount: Amount, AccountId: Id);
+            ApplyEvent.TransferCanceled(Reason, Amount, TargetAccountId, AccountId: Id);
         }
 
-
         // events
-        void OnAccountRegistered(string OwnerName)
+        private void OnAccountRegistered(string OwnerName)
         {
             Balance = 0;
             IsEnabled = true;
         }
 
-        void OnAmountDeposited(decimal Amount)
+        private void OnAmountDeposited(decimal Amount)
         {
             Balance += Amount;
         }
 
-        void OnAmountWithdrawn(decimal Amount)
+        private void OnAmountWithdrawn(decimal Amount)
         {
             Balance -= Amount;
         }
-
-
-
     }
 }

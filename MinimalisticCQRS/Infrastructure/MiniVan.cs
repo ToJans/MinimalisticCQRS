@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace MinimalisticCQRS.Infrastructure
 {
-    public class MiniVan: DynamicObject
+    public class MiniVan : DynamicObject
     {
         MiniVanRegistry Registry;
 
@@ -15,12 +15,22 @@ namespace MinimalisticCQRS.Infrastructure
         public virtual void Apply(Message msg)
         {
             var instances = Registry.InstancesForMessage(msg).ToArray();
-            foreach (var inst in instances.Where(x=> x is AR))
-                (inst as AR).Apply = this;
+            // initialize AR event handlers
+            foreach (var inst in instances.Where(x => x is AR))
+            {
+                (inst as AR).ApplyEvent = this;
+                (inst as AR).Apply = @event => Handle(@event);
+            }
             foreach (var inst in instances)
                 msg.InvokeOnInstanceIfPossible(inst, "Can");
             foreach (var inst in instances)
                 msg.InvokeOnInstanceIfPossible(inst);
+        }
+
+        public virtual void Handle(object msg)
+        {
+            var m = (msg as Message) ?? new Message(msg);
+            Apply(m);
         }
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
@@ -30,6 +40,5 @@ namespace MinimalisticCQRS.Infrastructure
             result = null;
             return true;
         }
-
     }
 }

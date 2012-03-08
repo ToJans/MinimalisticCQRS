@@ -10,3 +10,4 @@ _ReSharper.*
 *.swp
 /Build
 /packages/
+/TestResults/

@@ -29,6 +29,13 @@ namespace MinimalisticCQRS.Infrastructure
             Parameters = names.Select((x, i) => new KeyValuePair<string, object>(x, args[i]));
         }
 
+        public Message(object msg)
+        {
+            this.MethodName = msg.GetType().Name;
+            this.Parameters = msg.GetType().GetProperties().Select(x => new KeyValuePair<string, object>(x.Name, x.GetValue(msg, null)))
+                .Union(msg.GetType().GetFields().Select(x => new KeyValuePair<string, object>(x.Name, x.GetValue(msg))));
+        }
+
         public void InvokeOnInstanceIfPossible(object instance, string prefix = "")
         {
             var mi = instance.GetType().GetMethod(prefix + MethodName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -46,6 +53,32 @@ namespace MinimalisticCQRS.Infrastructure
                     .Select(y => y.Value).FirstOrDefault())
                 .ToArray();
             mi.Invoke(instance, pars);
+        }
+
+        public override int GetHashCode()
+        {
+            return MethodName.GetHashCode() ^ Parameters.Aggregate(0, (feed, x) => feed ^ x.GetHashCode());
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj as Message) == this;
+        }
+
+        public static bool operator ==(Message m1, Message m2)
+        {
+            if (ReferenceEquals(m1, m2)) return true;
+            if (ReferenceEquals(null, m1) || ReferenceEquals(null, m2)) return false;
+            if (m1.GetHashCode() != m2.GetHashCode()) return false;
+            if (m1.MethodName != m2.MethodName) return false;
+            if (m1.Parameters.Count() != m2.Parameters.Count()) return false;
+            if (m1.Parameters.All(x => m2.Parameters.Contains(x))) return true;
+            return false;
+        }
+
+        public static bool operator !=(Message m1, Message m2)
+        {
+            return !(m1 == m2);
         }
     }
 }
